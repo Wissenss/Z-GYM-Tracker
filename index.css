@@ -1,0 +1,15 @@
+header{
+  margin: auto;
+  text-align: center;
+
+  padding: 40px;
+}
+
+main{
+  max-width: 1200px;
+  margin: auto;
+}
+
+#cal-heatmap{
+  margin: auto;
+}
