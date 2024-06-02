@@ -23,7 +23,9 @@
   <!-- theme -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootswatch@4.5.2/dist/darkly/bootstrap.min.css" integrity="sha384-nNK9n28pDUDDgIiIqZ/MiyO3F4/9vsMtReZK39klb/MtkZI3/LtjSjlmyVPS3KdN" crossorigin="anonymous">
 
-  <link href="index.css" rel="stylesheet">
+  <link href="index.css" rel="stylesheet"/>
+
+  <script src="getWeek.js"></script>
 
 </head>
 <body>
@@ -32,49 +34,99 @@
   </header>
 
   <main>
-    <div id="cal-heatmap"></div>
+    <div id="assitance-heatmap"></div>
+
+    <br/><br/>
+
+    <div id="counters-panel">
+      <div id="total-minutes">
+        <h2>Total Minutes</h2>
+        <p id="total-minutes-count"></p>
+      </div>
+  
+      <div id="average-per-week">
+        <h2>Average per Week</h2>
+        <p id="average-per-week-count"></p>
+      </div>
+  
+      <div id="total-this-week">
+        <h2>This Week</h2>
+        <p id="total-this-week-count"></p>
+      </div>
+    </div>
   </main>
 
-  <script>
-    const cal = new CalHeatmap();
+  <body>
+    <script>
+      const startDate = new Date(2024, 4, 31);
+      const currentDate = new Date();
 
-    const data = [
-      { date: '2024-06-01', value: 40 },
-    ];
+      const data = [
+        { date: '2024-06-01', minutes: 40 },
+      ];
 
-    cal.paint({
-      itemSelector :"#cal-heatmap",
-      date: { start: new Date(2024, 4, 31) },
-      range: 8,
-      //domain: { type: "month" },
-      //subDomain: { type: "day" },
-      domain: {
-        type: 'month',
-        gutter: 4,
-        label: { text: 'MMM', textAlign: 'start', position: 'top' },
-      },
-      subDomain: { type: 'ghDay', radius: 2, width: 30, height: 30, gutter: 4 },
-      data: { source: data, x: 'date', y: 'value' },
-      scale: {
-        color: {
-          range: ['SlateGray', 'RoyalBlue'], //'SteelBlue',
-          interpolate: 'hsl',
-          type: 'linear',
-          domain: [0, 150],
+      const cal = new CalHeatmap();
+
+      cal.paint({
+        itemSelector :"#assitance-heatmap",
+        date: { start: startDate },
+        range: 8,
+        domain: {
+          type: 'month',
+          gutter: 4,
+          label: { text: 'MMM', textAlign: 'start', position: 'top' },
+        },
+        subDomain: { type: 'ghDay', radius: 2, width: 30, height: 30, gutter: 4 },
+        data: { source: data, x: 'date', y: 'minutes' },
+        scale: {
+          color: {
+            range: ['SlateGray', 'RoyalBlue'], //'SteelBlue',
+            interpolate: 'hsl',
+            type: 'linear',
+            domain: [0, 150],
+          },
         },
       },
-    },
-    [
-    [
-      CalendarLabel,
+      [
+        [
+          CalendarLabel,
+          {
+            width: 30,
+            textAlign: 'start',
+            text: () => dayjs.weekdaysShort().map((d, i) => (i % 2 == 0 ? '' : d)),
+            padding: [25, 0, 0, 0],
+          },
+        ],
+      ]
+    );
+
+    // calculate total minutes, minutes this week and average per week
+    let totalCount = 0;
+    let avgPerWeek = 0;
+    let totalWhisWeek = 0;
+    
+    totalCountElement = document.getElementById("total-minutes-count")
+    averageCountElement = document.getElementById("average-per-week-count")
+    totalWeekCountElement = document.getElementById("total-this-week-count")
+
+    for (let i=0; i<data.length; i++)
+    {
+      const minutes = data[i]['minutes'];
+
+      totalCount += minutes
+
+      if ((getWOY(currentDate) == getWOY(new Date(data[i]['date']))))
       {
-        width: 30,
-        textAlign: 'start',
-        text: () => dayjs.weekdaysShort().map((d, i) => (i % 2 == 0 ? '' : d)),
-        padding: [25, 0, 0, 0],
-      },
-    ],
-  ]);
+        totalWhisWeek += minutes;
+      }
+    }
+
+    avgPerWeek = totalCount / (getWOY(currentDate) - getWOY(startDate));
+
+    totalCountElement.innerHTML = totalCount + "min";
+    averageCountElement.innerHTML = avgPerWeek + "min";
+    totalWeekCountElement.innerHTML = totalWhisWeek + "min";
+
   </script>
 
 </body>
